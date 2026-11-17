@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Riverbend Clinic — Booking Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--scale:1.25;--bg:#FFFFFF;--ink:#1A2B3C;--ink-soft:#3E5266;--surface:#FFFFFF;--surface-2:#E8F0ED;--primary:#0B6E4F;--primary-dark:#095940;--warn-bg:#FFF4CC;--warn-ink:#6B5300;--ok-bg:#E3F4EA;--ok-ink:#0B5A3F;--err-bg:#FCEAEA;--err:#A6261D;--err-dark:#7E1C15;--border:#C9D3CE;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html{color-scheme:light;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible','Noto Sans Thai',Arial,sans-serif;font-size:calc(18px*var(--scale));line-height:1.55}
+h1{font-size:1.8em;margin:0 0 .3em}h2{font-size:1.4em;margin:0 0 .4em}p{color:var(--ink-soft)}
+.protobar{background:var(--ink);color:#fff;text-align:center;font-size:.8em;padding:6px 10px}
+.topbar{padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1em;min-width:0}
+.logo{width:2.1em;height:2.1em;flex:none}
+.userchip{display:flex;align-items:center;gap:8px;max-width:55%;padding:6px 14px;border-radius:30px;background:var(--surface-2);font-weight:700;color:var(--ink)}
+.userchip.guest{background:#F1F3F2;color:var(--ink-soft);font-weight:400}
+.userchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.userchip svg{width:1.2em;height:1.2em;flex:none}
+.ctlrow{display:flex;justify-content:flex-end;gap:14px;margin-top:8px;flex-wrap:wrap}
+.ctl{display:flex;gap:6px;align-items:center}
+.ctl button{min-width:2.6em;height:2.6em;padding:0 8px;border-radius:8px;border:2px solid var(--border);background:var(--surface);color:var(--ink);font-family:inherit;font-weight:700;cursor:pointer}
+.ctl button[aria-pressed="true"]{background:var(--primary);color:#fff;border-color:var(--primary)}
+.progress{display:flex;gap:6px;padding:14px 20px 0;max-width:700px;margin:0 auto}
+.progress:empty{display:none}.progress .step{flex:1;height:8px;border-radius:4px;background:var(--surface-2)}.progress .step.done{background:var(--primary)}
+main{max-width:700px;margin:0 auto;padding:16px 20px 170px}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;font-family:inherit;font-size:1em;font-weight:700;padding:16px 22px;border-radius:12px;border:2px solid transparent;cursor:pointer;min-height:56px;color:inherit}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--primary);color:#fff;width:100%}.btn-primary:hover:not(:disabled){background:var(--primary-dark)}
+.btn-secondary{background:var(--surface);color:var(--primary);border-color:var(--primary)}
+.btn-text{background:none;border:none;color:var(--primary);text-decoration:underline;padding:10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.row>*{flex:1}
+.select-card{display:block;width:100%;text-align:left;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;cursor:pointer;font-family:inherit;font-size:1em;color:var(--ink)}
+.select-card:hover{border-color:var(--primary)}.select-card.chosen{border-color:var(--primary);background:var(--surface-2)}
+.select-card .name{font-weight:700;font-size:1.1em}.select-card .desc{color:var(--ink-soft);margin-top:4px}.select-card .meta{font-weight:700;color:var(--primary);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.chip{padding:12px 16px;min-height:52px;border-radius:30px;border:2px solid var(--border);background:var(--surface);color:var(--ink);font-family:inherit;font-size:1em;font-weight:700;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--primary);color:#fff;border-color:var(--primary)}
+.slotgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
+.slot{padding:14px 8px;border-radius:10px;border:2px solid var(--border);background:var(--surface);color:var(--ink);font-family:inherit;font-size:1em;font-weight:700;cursor:pointer}
+.slot.unavail{opacity:.55;cursor:not-allowed;text-decoration:line-through}.slot.chosen{background:var(--primary);color:#fff;border-color:var(--primary)}
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}.summary-row:last-child{border-bottom:none}
+.summary-row strong{text-align:right}
+.banner{border-radius:12px;padding:14px 16px;margin:12px 0;font-weight:700}.banner.err{background:var(--err-bg);color:var(--err-dark)}.banner.warn{background:var(--warn-bg);color:var(--warn-ink)}.banner.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.where{background:var(--surface-2);border:2px solid var(--primary);border-radius:14px;padding:18px;margin-bottom:16px}
+.where .big{font-weight:700;font-size:1.3em;line-height:1.35}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;background:var(--warn-bg);color:var(--warn-ink);font-weight:700;font-size:.85em}
+.icon-circle{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2em;font-weight:700;margin:0 auto 14px}
+.icon-circle.ok{background:var(--surface-2);color:var(--primary)}.icon-circle.bad{background:var(--err-bg);color:var(--err)}
+.center{text-align:center}.small{font-size:.9em}
+label{display:block;font-weight:700;margin:14px 0 6px}
+input[type=text],input[type=password],select,textarea{width:100%;padding:14px;font-size:1em;font-family:inherit;border-radius:10px;border:2px solid var(--border);background:var(--surface);color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+.check{display:flex;align-items:center;gap:10px;font-weight:400}.check input{width:1.4em;height:1.4em}
+.heroLogo{width:84px;height:84px;display:block;margin:0 0 10px}
+.testpanel{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));z-index:10}
+.testpanel .btn{background:#fff;color:var(--ink);padding:10px 14px;min-height:48px}.testpanel .btn-text{background:none;color:#fff}
+.hidden{display:none!important}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+@media print{.protobar,.topbar,.progress,.noprint,.testpanel{display:none!important}main{padding:0}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46" rx="12" fill="#0B6E4F"/><rect x="20.5" y="8" width="7" height="22" rx="2" fill="#fff"/><rect x="13" y="15.5" width="22" height="7" rx="2" fill="#fff"/><path d="M8 37q4-5 8 0t8 0 8 0 8 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" fill="currentColor"/></symbol>
+</svg>
+<div class="protobar" data-i18n="proto"></div>
+<header class="topbar">
+  <div class="toprow">
+    <span class="brand"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span data-i18n="brand"></span></span>
+    <span class="userchip guest" id="userChip" aria-live="polite"><svg aria-hidden="true"><use href="#person"/></svg><span id="userName"></span></span>
+  </div>
+  <div class="ctlrow">
+    <div class="ctl" role="group" aria-label="Language / ภาษา">
+      <button id="lg-en" onclick="setLang('en')">EN</button>
+      <button id="lg-th" onclick="setLang('th')">ไทย</button>
+    </div>
+    <div class="ctl" role="group" aria-label="Text size">
+      <button id="ts-s" onclick="setScale(1,'ts-s')" style="font-size:.8em">A</button>
+      <button id="ts-m" onclick="setScale(1.25,'ts-m')" style="font-size:1em" aria-pressed="true">A</button>
+      <button id="ts-l" onclick="setScale(1.55,'ts-l')" style="font-size:1.25em">A</button>
+    </div>
+  </div>
+</header>
+<div class="progress" id="progressBar" aria-hidden="true"></div>
+<main>
+
+<section class="screen" id="screen-home">
+  <svg class="heroLogo" role="img" aria-label="Riverbend Clinic logo"><use href="#logo"/></svg>
+  <h1 data-i18n="homeTitle"></h1>
+  <p data-i18n="homeIntro"></p>
+  <div id="homeOut">
+    <p><strong data-i18n="loginIntro"></strong></p>
+    <button class="btn btn-primary" onclick="go('login')" data-i18n="login"></button>
+    <div class="row"><button class="btn btn-secondary" onclick="go('register')" data-i18n="register"></button></div>
+  </div>
+  <div id="homeIn" class="hidden">
+    <div class="banner warn hidden" id="noticeBanner"><span id="noticeBannerText"></span><button class="btn btn-secondary" style="margin-top:10px;width:100%" onclick="go('notices')" data-i18n="viewNotices"></button></div>
+    <button class="btn btn-primary" onclick="newBooking()" data-i18n="book"></button>
+    <div class="row">
+      <button class="btn btn-secondary" onclick="go('myappt')" data-i18n="viewAppt"></button>
+      <button class="btn btn-secondary" id="noticeBtn" onclick="go('notices')"></button>
+    </div>
+    <div class="row">
+      <button class="btn btn-secondary" onclick="openProfile()" data-i18n="editProfile"></button>
+      <button class="btn btn-secondary" onclick="logout()" data-i18n="logout"></button>
+    </div>
+  </div>
+  <p class="small" id="storeNote"></p>
+  <p class="small noprint"><a href="#" onclick="startTest();return false;" data-i18n="testLink"></a> · <a href="#" onclick="openResearcher();return false;" data-i18n="researcher"></a> · <a href="#" id="simClinic" class="hidden" onclick="simClinic();return false"></a></p>
+</section>
+
+<section class="screen" id="screen-login">
+  <h2 data-i18n="loginTitle"></h2>
+  <div id="loginOk" class="banner ok hidden" role="status" data-i18n="pinReset"></div>
+  <form onsubmit="doLogin();return false" class="card" novalidate>
+    <label for="lu" data-i18n="username"></label>
+    <input type="text" id="lu" maxlength="30" autocomplete="off">
+    <label for="lp" data-i18n="pin"></label>
+    <input type="password" id="lp" inputmode="numeric" maxlength="4" autocomplete="off">
+    <label class="check"><input type="checkbox" onchange="togglePin(this,['lp'])"><span data-i18n="showPin"></span></label>
+    <div id="loginErr" class="banner err hidden" role="alert"></div>
+    <button class="btn btn-primary" type="submit" style="margin-top:14px" data-i18n="login"></button>
+    <button class="btn btn-text" type="button" style="margin-top:6px" onclick="go('forgot')" data-i18n="forgotLink"></button>
+  </form>
+  <p class="small" data-i18n="demoNote"></p>
+  <div class="row">
+    <button class="btn btn-secondary" onclick="demoLogin()" data-i18n="demoLogin"></button>
+    <button class="btn btn-secondary" onclick="go('register')" data-i18n="toRegister"></button>
+  </div>
+  <div class="row"><button class="btn btn-text" onclick="go('home')" data-i18n="back"></button></div>
+</section>
+
+<section class="screen" id="screen-register">
+  <h2 data-i18n="registerTitle"></h2>
+  <p data-i18n="regNote"></p>
+  <form onsubmit="doRegister();return false" class="card" novalidate>
+    <label for="ru" data-i18n="username"></label>
+    <input type="text" id="ru" maxlength="30" autocomplete="off">
+    <div class="small" data-i18n="usernameHint"></div>
+    <label for="rp" data-i18n="pin"></label>
+    <input type="password" id="rp" inputmode="numeric" maxlength="4" autocomplete="off">
+    <label for="rp2" data-i18n="pin2"></label>
+    <input type="password" id="rp2" inputmode="numeric" maxlength="4" autocomplete="off">
+    <label class="check"><input type="checkbox" onchange="togglePin(this,['rp','rp2'])"><span data-i18n="showPin"></span></label>
+    <div id="regErr" class="banner err hidden" role="alert"></div>
+    <button class="btn btn-primary" type="submit" style="margin-top:14px" data-i18n="register"></button>
+  </form>
+  <div class="row">
+    <button class="btn btn-secondary" onclick="go('login')" data-i18n="toLogin"></button>
+    <button class="btn btn-text" onclick="go('home')" data-i18n="back"></button>
+  </div>
+</section>
+
+<section class="screen" id="screen-forgot">
+  <h2 data-i18n="forgotTitle"></h2>
+  <p data-i18n="forgotNote"></p>
+  <form onsubmit="doForgot();return false" class="card" novalidate>
+    <label for="fn" data-i18n="username"></label>
+    <input type="text" id="fn" maxlength="30" autocomplete="off">
+    <label for="fa" data-i18n="age"></label>
+    <input type="text" id="fa" inputmode="numeric" maxlength="3" autocomplete="off">
+    <label for="fnat" data-i18n="nationality"></label>
+    <select id="fnat"></select>
+    <label for="fp" data-i18n="newPin"></label>
+    <input type="password" id="fp" inputmode="numeric" maxlength="4" autocomplete="off">
+    <label for="fp2" data-i18n="newPin2"></label>
+    <input type="password" id="fp2" inputmode="numeric" maxlength="4" autocomplete="off">
+    <label class="check"><input type="checkbox" onchange="togglePin(this,['fp','fp2'])"><span data-i18n="showPin"></span></label>
+    <div id="forgotErr" class="banner err hidden" role="alert"></div>
+    <button class="btn btn-primary" type="submit" style="margin-top:14px" data-i18n="resetBtn"></button>
+  </form>
+  <div class="row"><button class="btn btn-secondary" onclick="go('login')" data-i18n="back"></button></div>
+</section>
+
+<section class="screen" id="screen-profile">
+  <h2 data-i18n="profileTitle"></h2>
+  <p data-i18n="profileNote"></p>
+  <div class="card">
+    <label data-i18n="gender" style="margin-top:0"></label>
+    <div class="chips" id="pfGender" role="group"></div>
+    <label for="pfAge" data-i18n="age"></label>
+    <input type="text" id="pfAge" inputmode="numeric" maxlength="3" autocomplete="off" oninput="pfDraft.age=this.value">
+    <label for="pfNat" data-i18n="nationality"></label>
+    <select id="pfNat" onchange="pfDraft.nat=this.value"></select>
+    <div id="pfErr" class="banner err hidden" role="alert"></div>
+  </div>
+  <button class="btn btn-primary" onclick="saveProfile()" data-i18n="saveProfile"></button>
+  <div class="row" id="pfBackRow"><button class="btn btn-secondary" onclick="go('home')" data-i18n="back"></button></div>
+</section>
+
+<section class="screen" id="screen-notices">
+  <h2 data-i18n="noticesTitle"></h2>
+  <div id="noticeList"></div>
+  <button class="btn btn-secondary" onclick="go('home')" data-i18n="backHome"></button>
+</section>
+
+<section class="screen" id="screen-myappt">
+  <h2 data-i18n="myApptTitle"></h2>
+  <div class="card" id="myapptCard"></div>
+  <button class="btn btn-secondary" onclick="go('home')" data-i18n="backHome"></button>
+</section>
+
+<section class="screen" id="screen-dept">
+  <h2 data-i18n="deptH"></h2><p data-i18n="deptIntro"></p>
+  <div id="deptList"></div>
+  <div class="row"><button class="btn btn-secondary" onclick="go('home')" data-i18n="back"></button><button class="btn btn-primary" id="deptNext" disabled onclick="go('doctor')" data-i18n="next"></button></div>
+</section>
+
+<section class="screen" id="screen-doctor">
+  <h2 data-i18n="doctorH"></h2><p id="doctorDeptLine" class="small"></p>
+  <div id="doctorList"></div>
+  <div class="row"><button class="btn btn-secondary" onclick="go('dept')" data-i18n="back"></button><button class="btn btn-primary" id="doctorNext" disabled onclick="go('datetime')" data-i18n="next"></button></div>
+</section>
+
+<section class="screen" id="screen-datetime">
+  <h2 id="dtTitle" data-i18n="dtH"></h2>
+  <p class="small" data-i18n="dateNote"></p>
+  <label for="dateSelect" data-i18n="dateLabel"></label>
+  <select id="dateSelect" onchange="renderSlots()"></select>
+  <p style="margin-top:16px;margin-bottom:0" data-i18n="availTimes"></p>
+  <div class="slotgrid" id="slotGrid"></div>
+  <div class="banner warn" id="fullNote" data-i18n="fullNote"></div>
+  <p id="chosenLine" style="font-weight:700"></p>
+  <div class="row"><button class="btn btn-secondary" onclick="backFromDT()" data-i18n="back"></button><button class="btn btn-primary" id="dtNext" disabled onclick="nextFromDT()" data-i18n="next"></button></div>
+</section>
+
+<section class="screen" id="screen-visit">
+  <h2 data-i18n="visitH"></h2>
+  <p data-i18n="visitIntro"></p>
+  <div class="card">
+    <label style="margin-top:0" data-i18n="symptomsLabel"></label>
+    <div class="chips" id="sxChips"></div>
+    <label for="vText" data-i18n="symptomText"></label>
+    <textarea id="vText" maxlength="200" oninput="state.visit.text=this.value"></textarea>
+    <div class="small" data-i18n="symptomNote"></div>
+  </div>
+  <div class="card">
+    <label style="margin-top:0" data-i18n="wcLabel"></label>
+    <button class="select-card" id="wcNo" onclick="setWc(false)"></button>
+    <button class="select-card" id="wcYes" onclick="setWc(true)"></button>
+    <div class="small" id="wcHelp"></div>
+  </div>
+  <div class="row"><button class="btn btn-secondary" onclick="go('datetime')" data-i18n="back"></button><button class="btn btn-primary" onclick="go('review')" data-i18n="next"></button></div>
+</section>
+
+<section class="screen" id="screen-review">
+  <h2 id="reviewTitle" data-i18n="reviewH"></h2>
+  <div class="card" id="reviewCard"></div>
+  <div class="row" id="editRow">
+    <button class="btn btn-secondary" onclick="go('dept')" data-i18n="editDept"></button>
+    <button class="btn btn-secondary" onclick="go('doctor')" data-i18n="editDoctor"></button>
+    <button class="btn btn-secondary" onclick="go('datetime')" data-i18n="editTime"></button>
+    <button class="btn btn-secondary" onclick="go('visit')" data-i18n="editDetails"></button>
+  </div>
+  <label class="check noprint" style="margin-top:18px"><input type="checkbox" id="forceFail"><span data-i18n="simFail"></span></label>
+  <button class="btn btn-primary" style="margin-top:12px" id="confirmBtn" onclick="confirmBooking()" data-i18n="confirm"></button>
+  <div class="row"><button class="btn btn-secondary" onclick="backFromReview()" data-i18n="back"></button></div>
+</section>
+
+<section class="screen" id="screen-success">
+  <div class="icon-circle ok">✓</div>
+  <h2 class="center" id="okTitle" data-i18n="okTitle"></h2>
+  <p class="center" id="okNote" data-i18n="protoNote"></p>
+  <div class="where" id="whereBox"></div>
+  <div class="card" id="successCard"></div>
+  <p class="center small" id="savedNote"></p>
+  <button class="btn btn-primary noprint" onclick="savePDF()" data-i18n="savePdf"></button>
+  <p class="center small noprint" id="pdfNote" role="status"></p>
+  <div class="row noprint"><button class="btn btn-secondary" onclick="restart()" data-i18n="returnHome"></button></div>
+</section>
+
+<section class="screen" id="screen-error">
+  <div class="icon-circle bad">!</div>
+  <h2 class="center" data-i18n="errTitle"></h2>
+  <p class="center" data-i18n="errBody"></p>
+  <button class="btn btn-primary" onclick="go('review')" data-i18n="tryAgain"></button>
+  <div class="row"><button class="btn btn-secondary" onclick="go('datetime')" data-i18n="otherTime"></button></div>
+</section>
+</main>
+
+<div class="testpanel hidden" id="testpanel">
+  <strong id="testTaskLabel"></strong>
+  <div class="row">
+    <button class="btn" onclick="logEvent('help_requested')" data-i18n="help"></button>
+    <button class="btn" onclick="nextTask()" data-i18n="markDone"></button>
+    <button class="btn btn-text" onclick="endTest()" data-i18n="endTest"></button>
+  </div>
+</div>
+
+<script>
+const T={
+en:{brand:'Riverbend Clinic',proto:'Prototype for usability testing — no real appointment will be created',guest:'Not logged in',
+homeTitle:'Book a hospital appointment',homeIntro:'Choose a department and doctor, pick a time that works for you, then confirm. It takes about three minutes.',
+loginIntro:'Please log in or create a demo account to book.',login:'Log In',register:'Create Account',logout:'Log Out',editProfile:'Edit My Details',
+book:'Book an Appointment',viewAppt:'View My Appointment',testLink:'Start a usability test task',researcher:'Researcher view',
+loginTitle:'Log In',registerTitle:'Create a Demo Account',username:'Booker name',pin:'4-digit PIN',pin2:'Type the PIN again',showPin:'Show PIN',
+demoNote:'This is a demo. Use the demo account if you do not want to create one.',demoLogin:'Use demo account',toRegister:'Create Account',toLogin:'I already have an account',
+regNote:'Please use a pretend name, not your real name, phone number, or real PIN. This account exists only in this demo.',usernameHint:'Up to 30 characters, for example: Somchai Jaidee',
+errFill:'Please fill in every box.',errUser:'Name must be 2–30 characters: letters, numbers, or spaces.',errPinFmt:'PIN must be exactly 4 numbers.',errPinMatch:'The two PINs are not the same. Please type them again.',errExists:'This name is already used. Please add a letter or number to make it different.',errBad:'Name or PIN is not correct. Please try again.',
+forgotLink:'Forgot PIN (password)?',forgotTitle:'Reset Your PIN',forgotNote:'Confirm the age and nationality you chose when you created your account. Then choose a new PIN.',newPin:'New 4-digit PIN',newPin2:'Type the new PIN again',resetBtn:'Reset PIN',errVerify:'We could not verify these details. Please check and try again.',pinReset:'Your PIN has been changed. Please log in with your new PIN.',
+profileTitle:'About You',profileNote:'Please choose your details. This is a prototype, so pretend details are fine.',gender:'Gender',male:'Male',female:'Female',other:'Other',na:'Prefer not to say',age:'Age (years)',nationality:'Nationality',choose:'Choose…',saveProfile:'Save and Continue',errGender:'Please choose your gender.',errAge:'Please type your age as a number from 1 to 120.',errNat:'Please choose your nationality.',ageYears:'Age {n}',
+myApptTitle:'My Appointment',noAppt:'You have no confirmed appointment yet.',backHome:'Back to Home',back:'Back',next:'Next',
+deptH:'Step 1 of 5 — Choose a Department',deptIntro:'Select the department that matches your health need.',doctorH:'Step 2 of 5 — Choose a Doctor',deptLabel:'Department: ',yrs:'{n} years of experience',
+dtH:'Step 3 of 5 — Choose Date & Time',dateNote:'Appointments can be booked from Thursday, 19 Nov 2026 onwards.',dateLabel:'Date',availTimes:'Available times',full:'full',fullNote:'Times marked “full” are already booked. Please choose another time.',selected:'Selected: {d} at {t}',pickTime:'Please select an available time.',
+visitH:'Step 4 of 5 — Your Visit Details',visitIntro:'These details are optional. They help the clinic get ready for you.',symptomsLabel:'What brings you in? Tap all that apply.',symptomText:'Describe in your own words (optional)',symptomNote:'Please write pretend symptoms. Do not type real medical information.',
+sx_chest:'Chest pain',sx_dizzy:'Dizziness',sx_fever:'Fever',sx_cough:'Cough',sx_tired:'Feeling weak or tired',sx_pain:'Joint or back pain',sx_check:'Blood sugar or blood pressure check',sx_other:'Other',
+wcLabel:'Do you need a wheelchair?',wcNo:'No, I can walk',wcYes:'Yes, I need a wheelchair',wcHelp:'Staff will meet you at the entrance with a wheelchair.',
+reviewH:'Step 5 of 5 — Review Your Booking',patient:'Booker name',about:'About you',department:'Department',doctor:'Doctor',dateTime:'Date & time',location:'Where to go',symptoms:'Symptoms',noneGiven:'None given',wheelchair:'Wheelchair',yes:'Yes — staff will help',no:'No',floor:'Floor {n}',
+editDept:'Edit Department',editDoctor:'Edit Doctor',editTime:'Edit Time',editDetails:'Edit Details',simFail:'Simulate a booking failure (for testing)',confirm:'Confirm Appointment',
+okTitle:'Appointment confirmed',protoNote:'This is a prototype — no real appointment was booked.',returnHome:'Return to Home',where:'Please go to',arrive:'Please arrive 15 minutes early.',savePdf:'Save as PDF',pdfSaved:'PDF saved.',slipTitle:'Appointment Slip',
+errTitle:'We could not confirm your appointment',errBody:'The clinic system did not respond in time. Nothing was booked, and your choices are still saved.',tryAgain:'Try Again',otherTime:'Choose a Different Time',
+help:'I need help',markDone:'Mark task complete',endTest:'End test',
+task1:'Task 1: Book an appointment in Cardiology with any doctor.',task2:'Task 2: Choose an available appointment date and time.',task3:'Task 3: Review the booking details and confirm the appointment.',task4:'Task 4: If the time you picked is unavailable, choose another time.',task5:'Task 5: If booking fails, recover and complete the task.',
+store_db:'Your account and bookings are saved in the prototype database.',store_local:'Database not available here. Data is saved in this browser only.',store_memory:'Storage is not available. Data will be lost when you close the page.',saved_db:'Saved to the prototype database.',saved_local:'Saved in this browser only.',saved_memory:'Not saved.',
+reschedule:'Reschedule',reschedDtH:'Choose a New Date & Time',reschedReviewH:'Review the New Time',oldTime:'Current time',newTime:'New time',confirmResched:'Confirm New Time',current:'current',reschedOk:'Appointment rescheduled',reschedNote:'A notice was added to your Notices. No email or text message is sent in this prototype.',notices:'Notices',noticesTitle:'My Notices',noNotices:'You have no notices.',newNotices:'You have {n} new notice(s).',viewNotices:'View Notices',newTag:'New',noticeMoved:'You moved your {dept} appointment with {doc} from {old} to {new}.',noticeClinic:'The clinic needs to change your {dept} appointment with {doc} on {old}. Please choose a new time.',clinicBanner:'The clinic asked to move this appointment. Please choose a new time.',simClinic:'Test: clinic postpones my appointment',
+logTitle:'Researcher log',logEmpty:'No events yet. Start a usability test task first.',close:'Close'},
+th:{brand:'คลินิกริเวอร์เบนด์',proto:'ต้นแบบสำหรับทดสอบการใช้งาน — ไม่มีการนัดหมายจริงเกิดขึ้น',guest:'ยังไม่ได้เข้าสู่ระบบ',
+homeTitle:'จองนัดพบแพทย์ที่โรงพยาบาล',homeIntro:'เลือกแผนก เลือกแพทย์ เลือกเวลาที่สะดวก แล้วกดยืนยัน ใช้เวลาประมาณสามนาที',
+loginIntro:'กรุณาเข้าสู่ระบบหรือสร้างบัญชีทดลองเพื่อจองนัด',login:'เข้าสู่ระบบ',register:'สร้างบัญชี',logout:'ออกจากระบบ',editProfile:'แก้ไขข้อมูลของฉัน',
+book:'จองนัดหมาย',viewAppt:'ดูนัดหมายของฉัน',testLink:'เริ่มภารกิจทดสอบการใช้งาน',researcher:'หน้าผู้วิจัย',
+loginTitle:'เข้าสู่ระบบ',registerTitle:'สร้างบัญชีทดลอง',username:'ชื่อผู้จอง',pin:'รหัส PIN 4 หลัก',pin2:'พิมพ์รหัส PIN อีกครั้ง',showPin:'แสดงรหัส PIN',
+demoNote:'นี่คือระบบทดลอง หากไม่อยากสร้างบัญชี ให้ใช้บัญชีทดลองได้เลย',demoLogin:'ใช้บัญชีทดลอง',toRegister:'สร้างบัญชี',toLogin:'ฉันมีบัญชีแล้ว',
+regNote:'กรุณาใช้ชื่อสมมติ ห้ามใช้ชื่อจริง เบอร์โทร หรือรหัสจริงของคุณ บัญชีนี้มีอยู่ในระบบทดลองนี้เท่านั้น',usernameHint:'ไม่เกิน 30 ตัวอักษร เช่น สมชาย ใจดี',
+errFill:'กรุณากรอกข้อมูลให้ครบทุกช่อง',errUser:'ชื่อต้องยาว 2–30 ตัวอักษร เป็นตัวอักษร ตัวเลข หรือเว้นวรรค',errPinFmt:'รหัส PIN ต้องเป็นตัวเลข 4 หลักเท่านั้น',errPinMatch:'รหัส PIN สองช่องไม่ตรงกัน กรุณาพิมพ์ใหม่อีกครั้ง',errExists:'ชื่อนี้มีคนใช้แล้ว กรุณาเพิ่มตัวอักษรหรือตัวเลขให้ต่างออกไป',errBad:'ชื่อหรือรหัส PIN ไม่ถูกต้อง กรุณาลองอีกครั้ง',
+forgotLink:'ลืมรหัส PIN (รหัสผ่าน)?',forgotTitle:'ตั้งรหัส PIN ใหม่',forgotNote:'กรอกอายุและสัญชาติที่คุณเลือกตอนสร้างบัญชี แล้วตั้งรหัส PIN ใหม่',newPin:'รหัส PIN ใหม่ 4 หลัก',newPin2:'พิมพ์รหัส PIN ใหม่อีกครั้ง',resetBtn:'ตั้งรหัส PIN ใหม่',errVerify:'เราตรวจสอบข้อมูลนี้ไม่ได้ กรุณาตรวจสอบแล้วลองอีกครั้ง',pinReset:'เปลี่ยนรหัส PIN เรียบร้อยแล้ว กรุณาเข้าสู่ระบบด้วยรหัสใหม่',
+profileTitle:'ข้อมูลของคุณ',profileNote:'กรุณาเลือกข้อมูลของคุณ นี่คือต้นแบบ ใช้ข้อมูลสมมติได้',gender:'เพศ',male:'ชาย',female:'หญิง',other:'อื่น ๆ',na:'ไม่ระบุ',age:'อายุ (ปี)',nationality:'สัญชาติ',choose:'เลือก…',saveProfile:'บันทึกและไปต่อ',errGender:'กรุณาเลือกเพศ',errAge:'กรุณาพิมพ์อายุเป็นตัวเลข 1 ถึง 120',errNat:'กรุณาเลือกสัญชาติ',ageYears:'อายุ {n} ปี',
+myApptTitle:'นัดหมายของฉัน',noAppt:'คุณยังไม่มีนัดหมายที่ยืนยันแล้ว',backHome:'กลับหน้าแรก',back:'ย้อนกลับ',next:'ถัดไป',
+deptH:'ขั้นที่ 1 จาก 5 — เลือกแผนก',deptIntro:'เลือกแผนกที่ตรงกับอาการหรือความต้องการของคุณ',doctorH:'ขั้นที่ 2 จาก 5 — เลือกแพทย์',deptLabel:'แผนก: ',yrs:'ประสบการณ์ {n} ปี',
+dtH:'ขั้นที่ 3 จาก 5 — เลือกวันและเวลา',dateNote:'จองนัดได้ตั้งแต่วันพฤหัสบดีที่ 19 พ.ย. 2569 เป็นต้นไป',dateLabel:'วันที่',availTimes:'เวลาที่ว่าง',full:'เต็ม',fullNote:'เวลาที่มีคำว่า “เต็ม” มีคนจองแล้ว กรุณาเลือกเวลาอื่น',selected:'ที่เลือก: {d} เวลา {t}',pickTime:'กรุณาเลือกเวลาที่ว่าง',
+visitH:'ขั้นที่ 4 จาก 5 — รายละเอียดการมาพบแพทย์',visitIntro:'ข้อมูลนี้ไม่บังคับ ช่วยให้คลินิกเตรียมตัวรับคุณได้ดีขึ้น',symptomsLabel:'อาการเบื้องต้นของคุณ กดเลือกได้หลายข้อ',symptomText:'เล่าอาการด้วยคำพูดของคุณเอง (ไม่บังคับ)',symptomNote:'กรุณาเขียนอาการสมมติ ห้ามพิมพ์ข้อมูลทางการแพทย์จริง',
+sx_chest:'เจ็บหน้าอก',sx_dizzy:'เวียนศีรษะ',sx_fever:'มีไข้',sx_cough:'ไอ',sx_tired:'อ่อนเพลีย ไม่มีแรง',sx_pain:'ปวดข้อหรือปวดหลัง',sx_check:'ตรวจน้ำตาลหรือความดัน',sx_other:'อื่น ๆ',
+wcLabel:'คุณต้องการรถเข็นหรือไม่?',wcNo:'ไม่ต้องการ ฉันเดินได้',wcYes:'ต้องการรถเข็น',wcHelp:'เจ้าหน้าที่จะนำรถเข็นมารับที่ทางเข้า',
+reviewH:'ขั้นที่ 5 จาก 5 — ตรวจสอบการจอง',patient:'ชื่อผู้จอง',about:'ข้อมูลผู้จอง',department:'แผนก',doctor:'แพทย์',dateTime:'วันและเวลา',location:'สถานที่ที่ต้องไป',symptoms:'อาการเบื้องต้น',noneGiven:'ไม่ได้ระบุ',wheelchair:'รถเข็น',yes:'ต้องการ — เจ้าหน้าที่จะช่วยเหลือ',no:'ไม่ต้องการ',floor:'ชั้น {n}',
+editDept:'แก้ไขแผนก',editDoctor:'แก้ไขแพทย์',editTime:'แก้ไขเวลา',editDetails:'แก้ไขรายละเอียด',simFail:'จำลองการจองล้มเหลว (สำหรับทดสอบ)',confirm:'ยืนยันนัดหมาย',
+okTitle:'ยืนยันนัดหมายแล้ว',protoNote:'นี่คือต้นแบบ — ไม่มีการจองนัดจริงเกิดขึ้น',returnHome:'กลับหน้าแรก',where:'กรุณาไปที่',arrive:'กรุณามาถึงก่อนเวลานัด 15 นาที',savePdf:'บันทึกเป็น PDF',pdfSaved:'บันทึก PDF แล้ว',slipTitle:'ใบนัดหมาย',
+errTitle:'เรายืนยันนัดหมายของคุณไม่ได้',errBody:'ระบบของคลินิกไม่ตอบสนอง ยังไม่มีการจองเกิดขึ้น และสิ่งที่คุณเลือกยังอยู่ครบ',tryAgain:'ลองอีกครั้ง',otherTime:'เลือกเวลาอื่น',
+help:'ฉันต้องการความช่วยเหลือ',markDone:'ทำภารกิจเสร็จแล้ว',endTest:'จบการทดสอบ',
+task1:'ภารกิจที่ 1: จองนัดที่แผนกโรคหัวใจกับแพทย์คนใดก็ได้',task2:'ภารกิจที่ 2: เลือกวันและเวลาที่ว่าง',task3:'ภารกิจที่ 3: ตรวจสอบรายละเอียดและยืนยันนัดหมาย',task4:'ภารกิจที่ 4: หากเวลาที่เลือกเต็ม ให้เลือกเวลาอื่น',task5:'ภารกิจที่ 5: หากการจองล้มเหลว ให้แก้ไขและทำให้เสร็จ',
+store_db:'บัญชีและนัดหมายของคุณถูกบันทึกในฐานข้อมูลของต้นแบบนี้',store_local:'ใช้ฐานข้อมูลไม่ได้ในตอนนี้ ข้อมูลจะบันทึกในเบราว์เซอร์นี้เท่านั้น',store_memory:'ไม่สามารถบันทึกข้อมูลได้ ข้อมูลจะหายเมื่อปิดหน้านี้',saved_db:'บันทึกลงฐานข้อมูลของต้นแบบแล้ว',saved_local:'บันทึกในเบราว์เซอร์นี้เท่านั้น',saved_memory:'ยังไม่ได้บันทึก',
+reschedule:'เลื่อนนัด',reschedDtH:'เลือกวันและเวลาใหม่',reschedReviewH:'ตรวจสอบเวลานัดใหม่',oldTime:'เวลานัดเดิม',newTime:'เวลานัดใหม่',confirmResched:'ยืนยันเวลานัดใหม่',current:'นัดเดิม',reschedOk:'เลื่อนนัดเรียบร้อยแล้ว',reschedNote:'เพิ่มการแจ้งเตือนในรายการแจ้งเตือนของคุณแล้ว ต้นแบบนี้ไม่ได้ส่งอีเมลหรือ SMS จริง',notices:'การแจ้งเตือน',noticesTitle:'การแจ้งเตือนของฉัน',noNotices:'คุณยังไม่มีการแจ้งเตือน',newNotices:'คุณมีการแจ้งเตือนใหม่ {n} รายการ',viewNotices:'ดูการแจ้งเตือน',newTag:'ใหม่',noticeMoved:'คุณเลื่อนนัด {dept} กับ {doc} จาก {old} เป็น {new}',noticeClinic:'คลินิกขอเลื่อนนัด {dept} กับ {doc} ที่เดิมคือ {old} กรุณาเลือกเวลาใหม่',clinicBanner:'คลินิกขอเลื่อนนัดนี้ กรุณาเลือกเวลาใหม่',simClinic:'ทดสอบ: คลินิกขอเลื่อนนัดของฉัน',
+logTitle:'บันทึกของผู้วิจัย',logEmpty:'ยังไม่มีเหตุการณ์ กรุณาเริ่มภารกิจทดสอบก่อน',close:'ปิด'}};
+
+const B=(a,b,c,d)=>({en:a+' — '+b,th:c+' — '+d});
+const depts=[
+ {id:'gen',n:{en:'General Medicine',th:'อายุรกรรมทั่วไป'},d:{en:'Diabetes, high blood pressure, high cholesterol, and everyday health concerns.',th:'เบาหวาน ความดันโลหิตสูง ไขมันในเลือดสูง และอาการทั่วไป'},loc:{b:B('Building A','Main Building','อาคาร A','อาคารหลัก'),f:2}},
+ {id:'card',n:{en:'Cardiology',th:'โรคหัวใจ'},d:{en:'Heart health, blood pressure, and chest concerns.',th:'ดูแลหัวใจ ความดันโลหิต และอาการเจ็บหน้าอก'},loc:{b:B('Building B','Heart Center','อาคาร B','ศูนย์โรคหัวใจ'),f:3}},
+ {id:'surg',n:{en:'Surgery',th:'ศัลยกรรม'},d:{en:'Lumps, hernias, gallbladder problems, and operations.',th:'ก้อนเนื้อ ไส้เลื่อน ถุงน้ำดี และการผ่าตัด'},loc:{b:B('Building D','Surgery Building','อาคาร D','อาคารศัลยกรรม'),f:2}},
+ {id:'obgyn',n:{en:'Women’s Health (OB-GYN)',th:'สูตินรีเวช'},d:{en:'Pregnancy care and women’s health.',th:'ดูแลการตั้งครรภ์และสุขภาพสตรี'},loc:{b:B('Building E','Women & Children Building','อาคาร E','อาคารแม่และเด็ก'),f:2}},
+ {id:'peds',n:{en:'Children’s Health',th:'กุมารเวช'},d:{en:'Health care for babies and children.',th:'ดูแลสุขภาพทารกและเด็ก'},loc:{b:B('Building E','Women & Children Building','อาคาร E','อาคารแม่และเด็ก'),f:1}},
+ {id:'eye',n:{en:'Eye Care',th:'จักษุ (ดูแลดวงตา)'},d:{en:'Vision tests, glasses, and eye health.',th:'ตรวจสายตา แว่นตา และสุขภาพดวงตา'},loc:{b:B('Building C','Specialist Clinic','อาคาร C','คลินิกเฉพาะทาง'),f:1}},
+ {id:'ortho',n:{en:'Bone & Joint',th:'กระดูกและข้อ'},d:{en:'Back pain, joint pain, and moving around.',th:'ปวดหลัง ปวดข้อ และการเคลื่อนไหว'},loc:{b:B('Building C','Specialist Clinic','อาคาร C','คลินิกเฉพาะทาง'),f:2}},
+ {id:'serious',n:{en:'Serious Illness Care',th:'โรคร้ายแรง (แพทย์เฉพาะทาง)'},d:{en:'Cancer, stroke, and kidney failure, with specialist doctors.',th:'มะเร็ง หลอดเลือดสมอง และไตวาย โดยแพทย์เฉพาะทาง'},loc:{b:B('Building F','Specialist Care Center','อาคาร F','ศูนย์การรักษาเฉพาะทาง'),f:5}}];
+const D=(id,en,th,sEn,sTh,y,bEn,bTh)=>({id,n:{en,th},s:{en:sEn,th:sTh},y,b:{en:bEn,th:bTh}});
+const docs={
+ gen:[D('d3','Dr. Sam Okafor','นพ.แซม โอกาฟอร์','Diabetes (blood sugar)','เบาหวาน (น้ำตาลในเลือด)',18,'Helps people control blood sugar with food, exercise, and medicine.','ช่วยควบคุมน้ำตาลในเลือดด้วยอาหาร การออกกำลังกาย และยา'),
+  D('d4','Dr. Nattaya Srisuk','พญ.ณัฐยา ศรีสุข','Diabetes and thyroid','เบาหวานและไทรอยด์',12,'Cares for long-term diabetes and checks eyes and feet.','ดูแลเบาหวานระยะยาว และตรวจตาและเท้า'),
+  D('d9','Dr. Lena Fischer','พญ.เลนา ฟิชเชอร์','High blood pressure','ความดันโลหิตสูง',15,'Treats high blood pressure and teaches simple checks at home.','รักษาความดันโลหิตสูง และสอนวิธีวัดความดันที่บ้าน'),
+  D('d10','Dr. Anan Chaiyo','นพ.อนันต์ ไชโย','High blood pressure','ความดันโลหิตสูง',22,'Experienced in blood pressure care for older adults.','ชำนาญการดูแลความดันโลหิตในผู้สูงอายุ'),
+  D('d11','Dr. Kanda Wong','พญ.กานดา วงศ์','High cholesterol (blood fat)','ไขมันในเลือดสูง',10,'Helps lower cholesterol with food advice and medicine.','ช่วยลดไขมันในเลือดด้วยคำแนะนำเรื่องอาหารและยา'),
+  D('d12','Dr. Peter Lund','นพ.ปีเตอร์ ลุนด์','High cholesterol and weight','ไขมันสูงและน้ำหนักเกิน',20,'Focuses on heart-healthy habits and weight control.','เน้นพฤติกรรมเพื่อสุขภาพหัวใจและการควบคุมน้ำหนัก')],
+ card:[D('d1','Dr. Alan Reyes','นพ.อลัน เรเยส','Heart rhythm specialist','ผู้เชี่ยวชาญจังหวะการเต้นของหัวใจ',25,'Treats irregular heartbeat and palpitations.','รักษาหัวใจเต้นผิดจังหวะและใจสั่น'),
+  D('d2','Dr. Priya Nair','พญ.ปรียา แนร์','General heart care','ดูแลโรคหัวใจทั่วไป',14,'Cares for chest pain, heart failure, and heart check-ups.','ดูแลอาการเจ็บหน้าอก หัวใจล้มเหลว และตรวจสุขภาพหัวใจ')],
+ surg:[D('d13','Dr. Jonas Meyer','นพ.โจนาส ไมเออร์','General surgery','ศัลยกรรมทั่วไป',20,'Performs common operations such as hernia repair.','ผ่าตัดทั่วไป เช่น ไส้เลื่อน'),
+  D('d14','Dr. Suda Pranee','พญ.สุดา ปราณี','Gallbladder and stomach surgery','ศัลยกรรมถุงน้ำดีและกระเพาะอาหาร',13,'Uses small-cut surgery for a faster recovery.','ใช้การผ่าตัดแผลเล็กเพื่อฟื้นตัวเร็ว')],
+ obgyn:[D('d15','Dr. Hannah Ortiz','พญ.ฮันนาห์ ออร์ติซ','Pregnancy care','ดูแลการตั้งครรภ์',16,'Looks after mothers before and after birth.','ดูแลคุณแม่ก่อนและหลังคลอด'),
+  D('d16','Dr. Wipa Charoen','พญ.วิภา เจริญ','Women’s health','สุขภาพสตรี',19,'Cares for women of all ages, including menopause.','ดูแลสตรีทุกวัย รวมถึงวัยหมดประจำเดือน')],
+ peds:[D('d17','Dr. Oliver Grant','นพ.โอลิเวอร์ แกรนต์','Children’s doctor','กุมารแพทย์ทั่วไป',14,'Treats colds, fevers, and growth checks in children.','รักษาหวัด ไข้ และตรวจการเจริญเติบโตของเด็ก'),
+  D('d18','Dr. Mali Sukhum','พญ.มะลิ สุขุม','Newborn and baby care','ดูแลทารกแรกเกิด',11,'Gentle care for newborns and vaccines.','ดูแลทารกแรกเกิดและวัคซีนอย่างอ่อนโยน')],
+ eye:[D('d5','Dr. Maria Chen','พญ.มาเรีย เฉิน','Vision and glasses','สายตาและแว่นตา',17,'Checks eyesight and prescribes glasses.','ตรวจวัดสายตาและตัดแว่น'),
+  D('d6','Dr. Tomas Berg','นพ.โทมัส เบิร์ก','Eye disease (cataract, glaucoma)','โรคตา (ต้อกระจก ต้อหิน)',12,'Treats cataract and glaucoma.','รักษาต้อกระจกและต้อหิน')],
+ ortho:[D('d7','Dr. Grace Kim','พญ.เกรซ คิม','Joint and back pain','ปวดข้อและปวดหลัง',15,'Helps with knee, hip, and back pain.','ช่วยรักษาอาการปวดเข่า สะโพก และหลัง'),
+  D('d8','Dr. Ivan Petrov','นพ.อีวาน เปตรอฟ','Sports injuries','บาดเจ็บจากการเล่นกีฬา',18,'Treats broken bones and sports injuries.','รักษากระดูกหักและบาดเจ็บจากกีฬา')],
+ serious:[D('d19','Dr. Elena Rossi','พญ.เอเลนา รอสซี','Cancer specialist (oncology)','ผู้เชี่ยวชาญโรคมะเร็ง',24,'Plans cancer treatment, including chemotherapy.','วางแผนรักษามะเร็ง รวมถึงเคมีบำบัด'),
+  D('d22','Dr. Siri Thongdee','พญ.สิริ ทองดี','Cancer surgery specialist','ศัลยแพทย์มะเร็ง',17,'Removes tumors with careful surgery.','ผ่าตัดก้อนมะเร็งอย่างละเอียดรอบคอบ'),
+  D('d20','Dr. Kenji Mori','นพ.เคนจิ โมริ','Stroke and brain specialist','ผู้เชี่ยวชาญโรคหลอดเลือดสมอง',21,'Treats stroke and guides recovery.','รักษาโรคหลอดเลือดสมองและดูแลฟื้นฟู'),
+  D('d21','Dr. Arun Vasan','นพ.อรุณ วาสัน','Kidney failure specialist','ผู้เชี่ยวชาญโรคไตวาย',19,'Cares for kidney failure and dialysis.','ดูแลโรคไตวายและการล้างไต')]};
+const dateKeys=['n19','n20','n23','n24','n25'];
+const dateLbl={n19:{en:'Thu, Nov 19, 2026',th:'พฤ. 19 พ.ย. 2569'},n20:{en:'Fri, Nov 20, 2026',th:'ศ. 20 พ.ย. 2569'},n23:{en:'Mon, Nov 23, 2026',th:'จ. 23 พ.ย. 2569'},n24:{en:'Tue, Nov 24, 2026',th:'อ. 24 พ.ย. 2569'},n25:{en:'Wed, Nov 25, 2026',th:'พ. 25 พ.ย. 2569'},
+ a:{en:'Mon, Sep 28',th:'จ. 28 ก.ย.'},b:{en:'Tue, Sep 29',th:'อ. 29 ก.ย.'},c:{en:'Wed, Sep 30',th:'พ. 30 ก.ย.'}};
+const slots={n19:[['09:00',1],['10:30',0],['13:00',1],['15:30',1]],n20:[['09:00',0],['11:00',1],['14:00',0],['16:00',1]],n23:[['09:30',1],['12:00',1],['14:30',1],['17:00',0]],n24:[['09:00',1],['10:30',1],['13:30',0],['15:00',1]],n25:[['10:00',1],['11:30',0],['14:00',1],['16:30',1]]};
+const genders=[['male','male'],['female','female'],['other','other'],['na','na']];
+const nats=[['th','Thai','ไทย'],['la','Lao','ลาว'],['mm','Myanmar','เมียนมา'],['kh','Cambodian','กัมพูชา'],['vn','Vietnamese','เวียดนาม'],['cn','Chinese','จีน'],['jp','Japanese','ญี่ปุ่น'],['in','Indian','อินเดีย'],['uk','British','อังกฤษ'],['us','American','อเมริกัน'],['ot','Other','อื่น ๆ']];
+const sxKeys=['chest','dizzy','fever','cough','tired','pain','check','other'];
+
+let lang='en';try{lang=localStorage.getItem('lang')||'en'}catch(e){}
+const t=k=>(T[lang][k]??T.en[k]??k);
+const L=o=>o[lang];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const blankVisit=()=>({tags:[],text:'',wc:false});
+const blank=()=>({dept:null,doctor:null,date:null,time:null,confirmed:null,visit:blankVisit()});
+let user=null,cur='home',state=blank(),pfDraft={g:'',age:'',nat:''};
+const steps=['dept','doctor','datetime','visit','review'];
+const nk=s=>s.trim().replace(/\s+/g,' ').toLowerCase();
+const acct=()=>user?data.accounts[user]:null;
+const fmtTime=s=>{if(lang==='th')return s+' น.';const[h,m]=s.split(':').map(Number);return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h>=12?'PM':'AM')};
+const fmtWhen=(d,tm)=>L(dateLbl[d])+' · '+fmtTime(tm);
+const deptOf=id=>depts.find(d=>d.id===id), docOf=id=>(docs[state.dept]||[]).find(d=>d.id===id);
+const natLabel=c=>{const n=nats.find(x=>x[0]===c);return n?(lang==='th'?n[2]:n[1]):c};
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const findB=id=>(data.bookings[user]||[]).find(b=>b.id===id);
+
+function setScale(s,id){document.documentElement.style.setProperty('--scale',s);['ts-s','ts-m','ts-l'].forEach(b=>$(b).setAttribute('aria-pressed',b===id))}
+function setLang(l){lang=l;try{localStorage.setItem('lang',l)}catch(e){}applyLang();logEvent('lang_'+l)}
+function applyLang(){
+  document.documentElement.lang=lang;
+  $('lg-en').setAttribute('aria-pressed',lang==='en');$('lg-th').setAttribute('aria-pressed',lang==='th');
+  document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
+  if(testOn)$('testTaskLabel').textContent=t('task'+(taskIndex+1));
+  render(cur);
+}
+function go(s){cur=s;document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));$('screen-'+s).classList.add('active');render(s);window.scrollTo(0,0);logEvent('view_'+s)}
+function updateChip(){const a=acct();$('userName').textContent=a?(a.name||user):t('guest');$('userChip').classList.toggle('guest',!a)}
+function render(s){
+  $('progressBar').innerHTML=steps.includes(s)?steps.map((_,i)=>`<div class="step ${i<=steps.indexOf(s)?'done':''}"></div>`).join(''):'';
+  updateChip();
+  if(s==='home'){$('homeOut').classList.toggle('hidden',!!user);$('homeIn').classList.toggle('hidden',!user);$('storeNote').textContent=t('store_'+mode);homeExtras()}
+  if(s==='notices')renderNotices();if(s==='dept')renderDept();if(s==='doctor')renderDoctors();if(s==='datetime')renderDates();if(s==='visit')renderVisit();if(s==='review')renderReview();
+  if(s==='myappt'||s==='success')renderConfirmed();if(s==='profile')renderProfile();if(s==='forgot')fillNat($('fnat'),$('fnat').value);
+}
+// ---- storage: prototype database if available, otherwise this browser ----
+let dbDoc=null,mode='memory',data={accounts:{},bookings:{},notices:{}};const LS='riverbend_demo_v1';
+const merge=o=>Object.assign({accounts:{},bookings:{},notices:{}},o||{});
+function paint(){if(cur==='home'){$('storeNote').textContent=t('store_'+mode);homeExtras()}updateChip()}
+async function initStorage(){
+  try{
+    const c=window.claude;
+    if(c&&c.use){
+      const [d,u]=await Promise.all([c.use('db'),c.use('user')]);
+      const id=(d&&u)?await u.id():null;
+      if(id){dbDoc=d.collection('data/users/'+id).doc('demo');const snap=await dbDoc.get();
+        if(snap.exists)data=merge(JSON.parse(JSON.stringify(snap.data())));
+        else{try{const raw=localStorage.getItem(LS);if(raw){data=merge(JSON.parse(raw));await dbDoc.set(data)}}catch(e){}}
+        mode='db';paint();return}
+    }
+  }catch(e){}
+  try{const raw=localStorage.getItem(LS);if(raw)data=merge(JSON.parse(raw));localStorage.setItem(LS,JSON.stringify(data));mode='local'}catch(e){}
+  paint();
+}
+async function save(){
+  if(mode==='db'){try{await dbDoc.set(data);return}catch(e){mode='local'}}
+  try{localStorage.setItem(LS,JSON.stringify(data));if(mode==='memory')mode='local'}catch(e){mode='memory'}
+  paint();
+}
+async function hashPin(pin,salt){
+  if(!(window.crypto&&crypto.subtle))return 'plain:'+pin;
+  const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(salt+':'+pin));
+  return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+async function addAccount(key,name,p,profile){const salt=Math.random().toString(36).slice(2);data.accounts[key]={name,salt,pin:await hashPin(p,salt),created:Date.now(),profile:profile||null};await save()}
+// ---- auth (demo accounts; PIN is hashed) ----
+function showErr(id,k){const e=$(id);e.textContent=t(k);e.classList.remove('hidden')}
+function clearAuth(){['lu','lp','ru','rp','rp2','fn','fa','fp','fp2'].forEach(i=>$(i).value='');['loginErr','regErr','forgotErr','pfErr'].forEach(i=>$(i).classList.add('hidden'))}
+function togglePin(cb,ids){ids.forEach(i=>$(i).type=cb.checked?'text':'password')}
+function loginAs(key){user=key;clearAuth();$('loginOk').classList.add('hidden');logEvent('login_ok');if(!acct().profile)openProfile();else go('home')}
+const validName=n=>/^[\p{L}\p{M}\p{N} .'\-]{2,30}$/u.test(n);
+async function doLogin(){
+  const key=nk($('lu').value),p=$('lp').value.trim();
+  if(!key||!p)return showErr('loginErr','errFill');
+  await ready;const a=data.accounts[key];
+  if(!a||a.pin!==await hashPin(p,a.salt)){logEvent('login_fail');return showErr('loginErr','errBad')}
+  loginAs(key);
+}
+async function ensureDemo(){await ready;if(!data.accounts.demo)await addAccount('demo','Demo',  '1234',{gender:'female',age:68,nat:'th'})}
+async function demoLogin(){await ensureDemo();loginAs('demo')}
+async function doRegister(){
+  const raw=$('ru').value.trim().replace(/\s+/g,' '),p=$('rp').value.trim(),p2=$('rp2').value.trim();
+  if(!raw||!p||!p2)return showErr('regErr','errFill');
+  if(!validName(raw))return showErr('regErr','errUser');
+  if(!/^\d{4}$/.test(p))return showErr('regErr','errPinFmt');
+  if(p!==p2)return showErr('regErr','errPinMatch');
+  await ready;const key=nk(raw);
+  if(data.accounts[key])return showErr('regErr','errExists');
+  await addAccount(key,raw,p,null);logEvent('register_ok');loginAs(key);
+}
+async function doForgot(){
+  const raw=$('fn').value.trim(),age=$('fa').value.trim(),nat=$('fnat').value,p=$('fp').value.trim(),p2=$('fp2').value.trim();
+  if(!raw||!age||!nat||!p||!p2)return showErr('forgotErr','errFill');
+  if(!/^\d{4}$/.test(p))return showErr('forgotErr','errPinFmt');
+  if(p!==p2)return showErr('forgotErr','errPinMatch');
+  await ready;const a=data.accounts[nk(raw)];
+  if(!a||!a.profile||String(a.profile.age)!==String(parseInt(age,10))||a.profile.nat!==nat){logEvent('reset_fail');return showErr('forgotErr','errVerify')}
+  a.salt=Math.random().toString(36).slice(2);a.pin=await hashPin(p,a.salt);await save();
+  logEvent('reset_ok');clearAuth();go('login');$('loginOk').classList.remove('hidden');
+}
+function logout(){user=null;state=blank();logEvent('logout');go('home')}
+// ---- profile (gender, age, nationality) ----
+function fillNat(sel,val){sel.innerHTML=`<option value="">${t('choose')}</option>`+nats.map(n=>`<option value="${n[0]}">${lang==='th'?n[2]:n[1]}</option>`).join('');sel.value=val||''}
+function openProfile(){const p=acct()&&acct().profile;pfDraft=p?{g:p.gender,age:String(p.age),nat:p.nat}:{g:'',age:'',nat:''};go('profile')}
+function renderProfile(){
+  $('pfGender').innerHTML='';
+  genders.forEach(([id,k])=>{const b=document.createElement('button');b.className='chip';b.type='button';b.textContent=t(k);b.setAttribute('aria-pressed',pfDraft.g===id);b.onclick=()=>{pfDraft.g=id;renderProfile()};$('pfGender').appendChild(b)});
+  $('pfAge').value=pfDraft.age;fillNat($('pfNat'),pfDraft.nat);
+  $('pfBackRow').classList.toggle('hidden',!(acct()&&acct().profile));
+}
+async function saveProfile(){
+  const age=parseInt(pfDraft.age,10);
+  if(!pfDraft.g)return showErr('pfErr','errGender');
+  if(!/^\d{1,3}$/.test(String(pfDraft.age).trim())||age<1||age>120)return showErr('pfErr','errAge');
+  if(!pfDraft.nat)return showErr('pfErr','errNat');
+  acct().profile={gender:pfDraft.g,age,nat:pfDraft.nat};await save();logEvent('profile_saved');go('home');
+}
+// ---- booking ----
+function renderDept(){
+  $('deptList').innerHTML='';
+  depts.forEach(d=>{const b=document.createElement('button');b.className='select-card'+(state.dept===d.id?' chosen':'');b.setAttribute('aria-pressed',state.dept===d.id);
+    b.innerHTML=`<div class="name">${L(d.n)}</div><div class="desc">${L(d.d)}</div>`;
+    b.onclick=()=>{if(state.dept!==d.id){state.doctor=null}state.dept=d.id;renderDept()};$('deptList').appendChild(b)});
+  $('deptNext').disabled=!state.dept;
+}
+function renderDoctors(){
+  $('doctorDeptLine').textContent=t('deptLabel')+(state.dept?L(deptOf(state.dept).n):'');
+  $('doctorList').innerHTML='';
+  (docs[state.dept]||[]).forEach(d=>{const b=document.createElement('button');b.className='select-card'+(state.doctor===d.id?' chosen':'');b.setAttribute('aria-pressed',state.doctor===d.id);
+    b.innerHTML=`<div class="name">${L(d.n)}</div><div class="meta">${L(d.s)}</div><div class="desc">${t('yrs').replace('{n}',d.y)}</div><div class="desc">${L(d.b)}</div>`;
+    b.onclick=()=>{state.doctor=d.id;renderDoctors()};$('doctorList').appendChild(b)});
+  $('doctorNext').disabled=!state.doctor;
+}
+function renderDates(){
+  const sel=$('dateSelect');sel.innerHTML='';
+  dateKeys.forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=L(dateLbl[k]);sel.appendChild(o)});
+  sel.value=dateKeys.includes(state.date)?state.date:dateKeys[0];$('dtTitle').textContent=t(state.resched?'reschedDtH':'dtH');renderSlots();
+}
+function renderSlots(){
+  const d=$('dateSelect').value;
+  if(d!==state.date){state.time=null}state.date=d;
+  $('slotGrid').innerHTML='';
+  slots[d].forEach(([tm,ok0])=>{const old=state.resched&&findB(state.resched),isCur=!!(old&&old.date===d&&old.time===tm),ok=ok0&&!isCur;const b=document.createElement('button');
+    b.className='slot'+(ok?'':' unavail')+(state.time===tm?' chosen':'');b.disabled=!ok;
+    b.textContent=fmtTime(tm)+(ok?'':' ('+t(isCur?'current':'full')+')');
+    b.onclick=()=>{state.time=tm;logEvent('slot_'+tm);renderSlots()};$('slotGrid').appendChild(b)});
+  $('chosenLine').textContent=state.time?t('selected').replace('{d}',L(dateLbl[state.date])).replace('{t}',fmtTime(state.time)):t('pickTime');
+  $('dtNext').disabled=!state.time;
+}
+function backFromDT(){go(state.resched?'myappt':'doctor')}
+function nextFromDT(){go(state.resched?'review':'visit')}
+function backFromReview(){go(state.resched?'datetime':'visit')}
+function renderVisit(){
+  const v=state.visit;
+  $('sxChips').innerHTML='';
+  sxKeys.forEach(k=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t('sx_'+k);b.setAttribute('aria-pressed',v.tags.includes(k));
+    b.onclick=()=>{v.tags=v.tags.includes(k)?v.tags.filter(x=>x!==k):v.tags.concat(k);renderVisit()};$('sxChips').appendChild(b)});
+  $('vText').value=v.text;
+  $('wcNo').textContent=t('wcNo');$('wcYes').textContent=t('wcYes');
+  $('wcNo').className='select-card'+(v.wc?'':' chosen');$('wcYes').className='select-card'+(v.wc?' chosen':'');
+  $('wcNo').setAttribute('aria-pressed',!v.wc);$('wcYes').setAttribute('aria-pressed',v.wc);
+  $('wcHelp').textContent=v.wc?t('wcHelp'):'';
+}
+function setWc(x){state.visit.wc=x;renderVisit()}
+// ---- booking summary helpers ----
+const row=(l,v)=>`<div class="summary-row"><span>${t(l)}</span><strong>${v}</strong></div>`;
+const locText=dp=>L(dp.loc.b)+' · '+t('floor').replace('{n}',dp.loc.f);
+const aboutText=p=>[t(p.gender),t('ageYears').replace('{n}',p.age),natLabel(p.nat)].join(' · ');
+const symText=v=>{const parts=[];if(v.tags.length)parts.push(v.tags.map(k=>t('sx_'+k)).join(', '));if(v.text.trim())parts.push(esc(v.text.trim()));return parts.length?parts.join(' — '):t('noneGiven')};
+function rowsHTML(b,o={}){
+  const dp=deptOf(b.dept),dc=docs[b.dept].find(x=>x.id===b.doc),v=b.visit||blankVisit(),p=b.patient;let h='';
+  if(p)h+=row('patient',esc(p.name))+(p.gender?row('about',aboutText(p)):'');
+  h+=row('department',L(dp.n))+row('doctor',L(dc.n));
+  if(o.old)h+=row('oldTime',fmtWhen(o.old.date,o.old.time));
+  h+=row(o.old?'newTime':'dateTime',b.date&&b.time?fmtWhen(b.date,b.time):'—');
+  h+=row('location',locText(dp))+row('symptoms',symText(v))+row('wheelchair',t(v.wc?'yes':'no'));
+  return h;
+}
+const patientSnap=()=>{const a=acct(),p=(a&&a.profile)||{};return {name:a?a.name||user:'',gender:p.gender,age:p.age,nat:p.nat}};
+function renderReview(){
+  const rs=!!state.resched,old=rs?findB(state.resched):null;
+  $('reviewTitle').textContent=t(rs?'reschedReviewH':'reviewH');
+  const pv=Object.assign({},old&&old.patient?{patient:old.patient}:{patient:patientSnap()},{dept:state.dept,doc:state.doctor,date:state.date,time:state.time,visit:state.visit});
+  $('reviewCard').innerHTML=(state.dept&&state.doctor)?rowsHTML(pv,{old}):'';
+  $('editRow').classList.toggle('hidden',rs);
+  $('confirmBtn').textContent=t(rs?'confirmResched':'confirm');
+}
+async function confirmBooking(){
+  if(!state.dept||!state.doctor||!state.time){go(!state.dept?'dept':!state.doctor?'doctor':'datetime');return}
+  const fail=$('forceFail').checked||Math.random()<0.15;
+  logEvent(fail?'booking_failed':'booking_confirmed');
+  if(fail){go('error');return}
+  if(state.resched){await confirmResched();return}
+  state.confirmed={id:newId(),dept:state.dept,doc:state.doctor,date:state.date,time:state.time,at:Date.now(),visit:JSON.parse(JSON.stringify(state.visit)),patient:patientSnap()};
+  await ready;(data.bookings[user]=data.bookings[user]||[]).push(state.confirmed);await save();
+  go('success');
+}
+const HR='<hr style="border:0;border-top:2px solid var(--border);margin:16px 0">';
+function renderConfirmed(){
+  if(cur==='success'){
+    const c=state.confirmed;if(!c)return;const dp=deptOf(c.dept),v=c.visit||blankVisit();
+    $('successCard').innerHTML=rowsHTML(c);
+    $('whereBox').innerHTML=`<div class="small">${t('where')}</div><div class="big">${L(dp.loc.b)}</div><div class="big">${t('floor').replace('{n}',dp.loc.f)}</div><div class="small" style="margin-top:6px">${t('arrive')}</div>`+(v.wc?`<div class="small" style="margin-top:6px;font-weight:700">${t('wcHelp')}</div>`:'');
+    $('okTitle').textContent=t(state.reschedDone?'reschedOk':'okTitle');$('okNote').textContent=t(state.reschedDone?'reschedNote':'protoNote');
+    $('savedNote').textContent=t('saved_'+mode);return;
+  }
+  const list=(data.bookings[user]||[]);list.forEach(b=>{if(!b.id)b.id=newId()});
+  $('myapptCard').innerHTML=list.length?list.slice().reverse().map(b=>{const cm=b.status==='clinic_moved';
+    return rowsHTML(b)+(cm?`<div class="banner warn">${t('clinicBanner')}</div>`:'')+`<button class="btn ${cm?'btn-primary':'btn-secondary'}" style="width:100%;margin-top:10px" onclick="startReschedule('${b.id}')">${t('reschedule')}</button>`}).join(HR):`<p>${t('noAppt')}</p>`;
+}
+// ---- PDF (drawn on a canvas, wrapped into a one-page PDF) ----
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+function wrapText(x,text,w){const out=[];let line='';for(const ch of text){if(x.measureText(line+ch).width>w&&line){const i=line.lastIndexOf(' ');if(i>0){out.push(line.slice(0,i));line=line.slice(i+1)+ch}else{out.push(line);line=ch}}else line+=ch}if(line)out.push(line);return out}
+function drawSlip(c){
+  const dp=deptOf(c.dept),dc=docs[c.dept].find(x=>x.id===c.doc),v=c.visit||blankVisit(),p=c.patient;
+  const cv=document.createElement('canvas');cv.width=1240;cv.height=1754;const x=cv.getContext('2d');x.scale(2,2);
+  const F="'Atkinson Hyperlegible','Noto Sans Thai',Arial,sans-serif";
+  x.fillStyle='#fff';x.fillRect(0,0,620,877);
+  x.fillStyle='#0B6E4F';rr(x,36,32,46,46,12);x.fill();
+  x.fillStyle='#fff';rr(x,56,38,6,22,2);x.fill();rr(x,49,45,20,7,2);x.fill();
+  x.strokeStyle='#fff';x.lineWidth=2.5;x.lineCap='round';x.beginPath();x.moveTo(44,67);x.quadraticCurveTo(49,62,54,67);x.quadraticCurveTo(59,72,64,67);x.quadraticCurveTo(69,62,74,67);x.stroke();
+  x.fillStyle='#1A2B3C';x.font='700 24px '+F;x.fillText(t('brand'),96,62);
+  x.font='700 22px '+F;x.fillText(t('slipTitle'),40,122);
+  x.fillStyle='#A6261D';x.font='400 13px '+F;x.fillText(t('protoNote'),40,146);
+  x.strokeStyle='#C9D3CE';x.lineWidth=1;x.beginPath();x.moveTo(40,160);x.lineTo(580,160);x.stroke();
+  x.fillStyle='#E8F0ED';rr(x,40,176,540,96,12);x.fill();x.strokeStyle='#0B6E4F';x.lineWidth=2;x.stroke();
+  x.fillStyle='#3E5266';x.font='400 13px '+F;x.fillText(t('where'),56,198);
+  x.fillStyle='#1A2B3C';x.font='700 20px '+F;x.fillText(L(dp.loc.b),56,226);x.fillText(t('floor').replace('{n}',dp.loc.f),56,254);
+  const rows=[];
+  if(p){rows.push([t('patient'),p.name]);if(p.gender)rows.push([t('about'),aboutText(p)])}
+  rows.push([t('department'),L(dp.n)],[t('doctor'),L(dc.n)],[t('dateTime'),fmtWhen(c.date,c.time)],[t('symptoms'),symText(v).replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")],[t('wheelchair'),t(v.wc?'yes':'no')]);
+  let y=304;
+  rows.forEach(([l,val])=>{x.fillStyle='#3E5266';x.font='400 13px '+F;x.fillText(l,40,y);x.fillStyle='#1A2B3C';x.font='700 15px '+F;
+    const lines=wrapText(x,val,380);lines.forEach((ln,i)=>x.fillText(ln,200,y+i*21));
+    y+=Math.max(1,lines.length)*21+8;x.strokeStyle='#E3E8E5';x.lineWidth=1;x.beginPath();x.moveTo(40,y-10);x.lineTo(580,y-10);x.stroke();y+=14});
+  x.fillStyle='#1A2B3C';x.font='700 14px '+F;x.fillText(t('arrive'),40,Math.max(y+20,800));
+  if(v.wc){x.font='400 13px '+F;x.fillText(t('wcHelp'),40,Math.max(y+42,822))}
+  x.fillStyle='#A6261D';x.font='400 12px '+F;x.fillText(t('protoNote'),40,860);
+  return cv;
+}
+function makePdf(jpg,w,h){
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;
+  const push=b=>{const u=typeof b==='string'?enc.encode(b):b;parts.push(u);len+=u.length};
+  push('%PDF-1.4\n');
+  const obj=(n,body)=>{offs[n]=len;push(n+' 0 obj\n');(Array.isArray(body)?body:[body]).forEach(push);push('\nendobj\n')};
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>');
+  const cs='q 595 0 0 842 0 0 cm /Im0 Do Q';
+  obj(4,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+  obj(5,['<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n',jpg,'\nendstream']);
+  const xr=len;push('xref\n0 6\n0000000000 65535 f \n');
+  for(let i=1;i<=5;i++)push(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+  push('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF');
+  const out=new Uint8Array(len);let p=0;parts.forEach(u=>{out.set(u,p);p+=u.length});return out;
+}
+async function savePDF(){
+  const c=state.confirmed;if(!c)return;logEvent('pdf_click');
+  try{
+    const dl=(window.claude&&claude.use)?await claude.use('downloads'):null;
+    if(!dl){window.print();return}
+    if(document.fonts){try{await Promise.all([document.fonts.load("700 15px 'Noto Sans Thai'",'กา'),document.fonts.load("400 13px 'Noto Sans Thai'",'กา'),document.fonts.load("700 15px 'Atkinson Hyperlegible'",'A'),document.fonts.load("400 13px 'Atkinson Hyperlegible'",'A')])}catch(_){}await document.fonts.ready}
+    const cv=drawSlip(c),b64=cv.toDataURL('image/jpeg',0.92).split(',')[1],bin=atob(b64),jpg=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)jpg[i]=bin.charCodeAt(i);
+    await dl.save({filename:'appointment-slip.pdf',data:makePdf(jpg,cv.width,cv.height)});
+    $('pdfNote').textContent=t('pdfSaved');
+  }catch(e){if(e&&e.code==='declined')return;try{window.print()}catch(_){}}
+}
+// ---- reschedule + notices ----
+function newBooking(){state=blank();go('dept')}
+function startReschedule(id){const b=findB(id);if(!b)return;state=blank();Object.assign(state,{dept:b.dept,doctor:b.doc,date:dateKeys.includes(b.date)?b.date:dateKeys[0],time:null,resched:id,visit:JSON.parse(JSON.stringify(b.visit||blankVisit()))});logEvent('reschedule_start');go('datetime')}
+async function confirmResched(){
+  await ready;const b=findB(state.resched);if(!b){go('myappt');return}
+  const oldD=b.date,oldT=b.time;b.date=state.date;b.time=state.time;delete b.status;
+  (data.notices[user]=data.notices[user]||[]).push({id:newId(),type:'moved',dept:b.dept,doc:b.doc,oldDate:oldD,oldTime:oldT,newDate:b.date,newTime:b.time,at:Date.now(),read:false});
+  await save();state.confirmed=b;state.reschedDone=true;logEvent('rescheduled');go('success');
+}
+async function simClinic(){
+  await ready;const b=(data.bookings[user]||[]).slice().reverse().find(x=>x.status!=='clinic_moved');if(!b)return;
+  b.status='clinic_moved';
+  (data.notices[user]=data.notices[user]||[]).push({id:newId(),type:'clinic',dept:b.dept,doc:b.doc,oldDate:b.date,oldTime:b.time,at:Date.now(),read:false});
+  await save();logEvent('clinic_postponed');homeExtras();
+}
+function homeExtras(){
+  const n=user?(data.notices[user]||[]).filter(x=>!x.read).length:0;
+  $('noticeBanner').classList.toggle('hidden',!n);$('noticeBannerText').textContent=t('newNotices').replace('{n}',n);
+  $('noticeBtn').textContent=t('notices')+(n?' ('+n+')':'');
+  const has=!!user&&(data.bookings[user]||[]).length>0;
+  $('simClinic').classList.toggle('hidden',!has);$('simClinic').textContent=t('simClinic');
+}
+function noticeHTML(n){
+  const dp=deptOf(n.dept),dc=docs[n.dept].find(x=>x.id===n.doc);
+  const txt=t(n.type==='clinic'?'noticeClinic':'noticeMoved').replace('{dept}',L(dp.n)).replace('{doc}',L(dc.n)).replace('{old}',fmtWhen(n.oldDate,n.oldTime)).replace('{new}',n.newDate?fmtWhen(n.newDate,n.newTime):'');
+  return `<div class="card">${n.read?'':`<span class="badge">${t('newTag')}</span> `}<span>${txt}</span><div class="small" style="margin-top:6px">${new Date(n.at).toLocaleString(lang==='th'?'th-TH':'en-GB')}</div></div>`;
+}
+function renderNotices(){
+  const all=data.notices[user]||[];
+  $('noticeList').innerHTML=all.length?all.slice().reverse().map(noticeHTML).join(''):`<p>${t('noNotices')}</p>`;
+  if(all.some(n=>!n.read)){all.forEach(n=>n.read=true);save()}
+}
+function restart(){state=blank();$('forceFail').checked=false;go('home')}
+// ---- usability-test mode ----
+let testOn=false,taskIndex=0;const log=[];
+function logEvent(e){log.push({t:new Date().toISOString(),task:testOn?taskIndex+1:null,e})}
+async function startTest(){await ensureDemo();testOn=true;taskIndex=0;user='demo';state=blank();logEvent('test_started');$('testpanel').classList.remove('hidden');$('testTaskLabel').textContent=t('task1');go('home')}
+function nextTask(){logEvent('task_complete');taskIndex++;if(taskIndex>=5){endTest();return}$('testTaskLabel').textContent=t('task'+(taskIndex+1))}
+function endTest(){logEvent('test_ended');testOn=false;$('testpanel').classList.add('hidden')}
+function openResearcher(){
+  document.getElementById('rlog')?.remove();
+  const rows=log.map(r=>`<div class="summary-row"><span>${r.t.slice(11,19)} — ${r.e}</span><strong>${r.task?'T'+r.task:''}</strong></div>`).join('')||`<p>${t('logEmpty')}</p>`;
+  const d=document.createElement('div');d.id='rlog';d.className='card';
+  d.innerHTML=`<h2>${t('logTitle')}</h2>${rows}<button class="btn btn-secondary" style="margin-top:12px" onclick="this.parentNode.remove()">${t('close')}</button>`;
+  $('screen-home').appendChild(d);
+}
+const ready=initStorage();applyLang();go('home');
+</script>
+</body>
+</html>
